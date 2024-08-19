@@ -1,2 +1,6 @@
-Data/Filterbanks/*
+Data/FilterBanks
+Data/FilterBanks/*
+Data/*.mseed
+Figures
 Figures/*
+__pycache__/*

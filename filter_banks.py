@@ -65,8 +65,32 @@ class PLOT_WAVEFORMS:
         the default picks and event info for the desired marsquake
         (uncertainties, distance, etc.)
         '''
-        self.tref_utc   = UTCDateTime(2021, 12, 24, 22, 45, 10, 666041)
-        self.tswave_utc = UTCDateTime(2021, 12, 24, 22, 50, 58, 149623)
+
+        picks_events    = np.load(os.path.join(data_dir,
+                                               'Events_picks.npy'),
+                                  allow_pickle=True).item()
+
+        picks   = picks_events[self.event_id]
+
+        tref    = picks.get('P',
+                            picks.get('PP',
+                                      picks.get('x1',
+                                                picks.get('Pg',picks.get('start')))))
+        self.tref_utc   = UTCDateTime(tref)
+        self.pha_ref    = [i for i in picks if picks[i]==self.tref_utc][0]
+
+
+        tswave  = picks.get('S',
+                            picks.get('SS',
+                                      picks.get('x2',
+                                                picks.get('Sg',picks.get('start')))))
+        self.tswave_utc = UTCDateTime(tswave)
+        self.pha_swave  = [i for i in picks if picks[i]==self.tswave_utc][0]
+
+        #import ipdb; ipdb.set_trace()  # noqa
+
+        #self.tref_utc   = UTCDateTime(2021, 12, 24, 22, 45, 10, 666041)
+        #self.tswave_utc = UTCDateTime(2021, 12, 24, 22, 50, 58, 149623)
 
         return
 
@@ -134,7 +158,11 @@ class PLOT_WAVEFORMS:
             stream_copy = pf.polarization_filter(stream_copy,
                                                  win_pol)
 
-        max_val = np.max(np.abs(stream_copy.select(component=self.component)[0].data))
+        stream_norm = stream_copy.copy()
+        stream_norm.trim(starttime=self.tref_utc+ax.get_xlim()[0],
+                         endtime=self.tref_utc+ax.get_xlim()[1])
+
+        max_val = np.max(np.abs(stream_norm.select(component=self.component)[0].data))
         ax.set_ylim([-1.5*max_val, 1.5*max_val])
 
         tr  = stream_copy.select(component=self.component)[0]
@@ -346,7 +374,7 @@ class PLOT_WAVEFORMS:
 
         for ax in [ax_st, ax_pz, ax_fb]:
             for tt, pha in zip([0, self.tswave_utc-self.tref_utc],
-                               ['P', 'S']):
+                               [self.pha_ref, self.pha_swave]):
                 ax.vlines(tt, -10, 10,
                           color='#3D405B',
                           ls='dashed',
