@@ -1,5 +1,6 @@
 Data/FilterBanks
 Data/FilterBanks/*
+Data/Polarization_Analysis/*
 Data/*.mseed
 Figures
 Figures/*

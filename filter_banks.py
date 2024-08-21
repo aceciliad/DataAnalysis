@@ -323,11 +323,6 @@ class PLOT_WAVEFORMS:
         return
 
 
-
-
-
-
-
     def set_figure(self):
 
 
@@ -345,7 +340,10 @@ class PLOT_WAVEFORMS:
         ax_pz   = fig.add_subplot(gs[1])
 
         for ax in [ax_st, ax_pz]:
-            ax.spines[['right', 'top', 'bottom']].set_visible(False)
+            #ax.spines[['right', 'top', 'bottom']].set_visible(False)
+            ax.spines.top.set_visible(False)
+            ax.spines.bottom.set_visible(False)
+            ax.spines.right.set_visible(False)
             ax.set_xlim([-100, 850])
             ax.tick_params(labelbottom=False, bottom=False)
             ax.set_ylabel('Amplitude\n(m/s)', labelpad=-0.2)
@@ -360,7 +358,10 @@ class PLOT_WAVEFORMS:
 
         ax_fb   = fig.add_subplot(gs_fb[:])
 
-        ax_fb.spines[['right', 'top']].set_visible(False)
+        #ax_fb.spines[['right', 'top']].set_visible(False)
+        ax_fb.spines.top.set_visible(False)
+        ax_fb.spines.right.set_visible(False)
+
         ax_fb.set_xlim(ax_st.get_xlim())
         ax_fb.set_xlabel('Time (s)')
         ax_fb.xaxis.set_major_locator(MultipleLocator(250.))
