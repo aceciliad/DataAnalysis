@@ -180,9 +180,7 @@ class PLOT_POLANALYSIS:
             diff    = np.diff(max_azi)
 
             if len(diff) > 0 and np.abs(diff) < 120.:
-                print(diff)
                 ypos = 1.1
-
 
             ax_kde.vlines(max_val,
                           ax_kde.get_ylim()[0],
@@ -441,6 +439,16 @@ class PLOT_POLANALYSIS:
 
         ax_kde.xaxis.set_major_locator(MultipleLocator(180))
         ax_kde.xaxis.set_minor_locator(MultipleLocator(45))
+
+        fig.text(0.5, 0.99,
+                f'{self.event_id}',
+                zorder=100, va='top',
+                ha='center',clip_on=False,
+                bbox= dict(boxstyle='square',
+                           facecolor='lightgray',
+                           edgecolor='none',
+                           alpha=0.7))
+
 
 
         return fig, ax_azi, ax_spe, ax_kde
