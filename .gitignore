@@ -4,4 +4,5 @@ Data/Polarization_Analysis/*
 Data/*.mseed
 Figures
 Figures/*
+.gitignore
 __pycache__/*
