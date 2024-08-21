@@ -122,7 +122,6 @@ class PLOT_POLANALYSIS:
         plt.savefig(os.path.join(figs_dir,
                                  f'PolAnalysis_{self.event_id}.pdf'))
 
-        import ipdb; ipdb.set_trace()  # noqa
         return
 
 
