@@ -111,11 +111,11 @@ class PLOT_POLANALYSIS:
     def plot_analysis(self):
 
         xwin    = np.array([-100, self.tswave_utc-self.tref_utc+200])
-        fig, ax_azi, ax_spe, ax_kde = self.set_fig(xwin=xwin)
+        fig, ax_azi, ax_spe, ax_kde, ax_den = self.set_fig(xwin=xwin)
 
         self.plot_scalogram(ax_spe)
 
-        self.plot_azimuth(ax_azi, ax_kde, ax_spe)
+        self.plot_azimuth(ax_azi, ax_kde, ax_spe, ax_den)
 
 
         os.makedirs(figs_dir, exist_ok=True)
@@ -125,7 +125,7 @@ class PLOT_POLANALYSIS:
         return
 
 
-    def plot_azimuth(self, ax_azi, ax_kde, ax_spe):
+    def plot_azimuth(self, ax_azi, ax_kde, ax_spe, ax_den):
 
         data_pol    = self.get_pa()
 
@@ -195,7 +195,7 @@ class PLOT_POLANALYSIS:
                                                  foreground="white")])
 
             # mark phases in azimuth plot
-            for ax in [ax_azi, ax_spe]:
+            for ax in [ax_azi, ax_spe, ax_den]:
                 ax.vlines(tt, ymin=ax.get_ylim()[0],
                           ymax=ax.get_ylim()[1],
                           colors=color,
@@ -228,6 +228,45 @@ class PLOT_POLANALYSIS:
         ax_kde.fill_between(azi_grid, 0., azi_kde,
                             color='grey', ec=None,
                             alpha=0.5, zorder=1)
+
+
+        # KDE azimuth in time
+        n_azi   = 100
+        azi_grid  = np.linspace(0., 180., n_azi)
+
+        azimuth2    = np.copy(azimuth)
+        azimuth2    = np.where(azimuth2<180., azimuth2, azimuth2-180.)
+        azimuth_den = azimuth2[fa_idx:fb_idx, :]
+        time_ref    = time - self.tref_utc
+
+        # moving time window
+        ntime   = 1000
+        win     = ax_spe.get_xlim()
+        time_grid   = np.linspace(win[0]-50, win[1]+50, ntime)
+        time_width  = 10.
+
+        azi_time    = np.empty((n_azi, ntime))
+        azi_time[:] = np.nan
+
+        max_azis    = np.array(())
+        for ii, ti in enumerate(time_grid):
+
+            ta_val, ta_idx = find_nearest(time_ref, ti)
+            tb_val, tb_idx = find_nearest(time_ref, ti+time_width)
+
+            azimuth_win = azimuth_den[:, ta_idx:tb_idx]
+            azi_plot = azimuth_win.ravel()
+            kde = stats.gaussian_kde(azi_plot, bw_method=0.2)
+
+            azi_kde = kde.evaluate(azi_grid)
+            azi_kde /= np.max(azi_kde)
+
+            max_azis    = np.append(max_azis, azi_grid[np.argmax(azi_kde)])
+            azi_time[:,ii] = azi_kde
+
+        ax_den.pcolormesh(time_grid+5, azi_grid, azi_time,
+                          norm=self.norm_den,
+                          rasterized=True, cmap=self.cmap_den)
 
         return
 
@@ -330,34 +369,49 @@ class PLOT_POLANALYSIS:
                 xwin=np.array([-100, 600])):
 
         fig = plt.figure()
-        fig.set_size_inches(6.5,4.)
+        fig.set_size_inches(7.,5.5)
 
-        gs  = gridspec.GridSpec(ncols=3, nrows=2, bottom=0.1,
-                                top=0.9, left=0.1, right=0.87,
+        gs  = gridspec.GridSpec(ncols=3, nrows=3, bottom=0.09,
+                                top=0.93, left=0.09, right=0.94,
                                 figure=fig, wspace=0.2, hspace=0.15)
 
         ax_spe  = fig.add_subplot(gs[0,:2])
         ax_azi  = fig.add_subplot(gs[1,:2])
+        ax_den  = fig.add_subplot(gs[2,:2])
+
         ax_kde  = fig.add_subplot(gs[1,2])
 
         posw    = ax_kde.get_position()
         posh    = ax_spe.get_position()
 
+        dpos    = 0.01
         gs_cb1  = gridspec.GridSpec(ncols=1, nrows=1,
-                                    bottom=posh.y0,
-                                    top=posh.y1,
+                                    bottom=posh.y0+dpos,
+                                    top=posh.y1-dpos,
                                     left=posw.x0,
                                     right=posw.x0+0.025,
                                     figure=fig)
         gs_cb2  = gridspec.GridSpec(ncols=1, nrows=1,
-                                    bottom=posh.y0,
-                                    top=posh.y1,
+                                    bottom=posh.y0+dpos,
+                                    top=posh.y1-dpos,
                                     left=posw.x1-0.045,
                                     right=posw.x1-0.02,
                                     figure=fig)
 
+        posw    = ax_kde.get_position()
+        posh    = ax_den.get_position()
+
+        gs_cb3  = gridspec.GridSpec(ncols=1, nrows=1,
+                                    bottom=posh.y0+dpos,
+                                    top=posh.y1-dpos,
+                                    left=posw.x0,
+                                    right=posw.x0+0.025,
+                                    figure=fig)
+
+
         ax_cbspe= fig.add_subplot(gs_cb1[0])
         ax_cbazi= fig.add_subplot(gs_cb2[0])
+        ax_cbden= fig.add_subplot(gs_cb3[0])
 
         # set Spectrogram part
         ax_spe.set_ylim([0.1, 1])
@@ -396,10 +450,11 @@ class PLOT_POLANALYSIS:
         cb.ax.yaxis.set_minor_locator(MultipleLocator(10))
 
         # PA panel
+        ax_azi.tick_params(labelbottom=False)
         ax_azi.xaxis.set_major_locator(ax_spe.xaxis.get_major_locator())
-        ax_azi.xaxis.set_minor_locator(ax_azi.xaxis.get_minor_locator())
+        ax_azi.xaxis.set_minor_locator(ax_spe.xaxis.get_minor_locator())
         ax_azi.set_ylabel('Frequency (Hz)')
-        ax_azi.set_xlabel('Time (s)')
+        #ax_azi.set_xlabel('Time (s)')
         ax_azi.set_xlim(xwin)
         ax_azi.set_ylim(ax_spe.get_ylim())
 
@@ -449,9 +504,39 @@ class PLOT_POLANALYSIS:
                            edgecolor='none',
                            alpha=0.7))
 
+        # density azimuth
+        ax_den.xaxis.set_major_locator(ax_spe.xaxis.get_major_locator())
+        ax_den.xaxis.set_minor_locator(ax_spe.xaxis.get_minor_locator())
+        ax_den.yaxis.set_major_locator(MultipleLocator(90))
+        ax_den.yaxis.set_minor_locator(MultipleLocator(30))
 
 
-        return fig, ax_azi, ax_spe, ax_kde
+        ax_den.set_ylabel('Azimuth (deg)')
+        ax_den.set_xlabel('Time (s)')
+        ax_den.set_xlim(xwin)
+        ax_den.set_ylim([0, 180])
+
+        # colorbar
+        ncol    = len(mpl.cm.plasma.colors)
+        colors_plas = [mpl.cm.plasma.colors[i] for i in range(0, ncol, 64)]
+        colors_list = ['w', 'w', 'w'] + [mpl.cm.plasma.colors[0]]+ colors_plas
+
+        self.cmap_den = LinearSegmentedColormap.from_list('mycmap',
+                                                          colors_list,
+                                                          N=200)
+        # Colorbar
+        self.norm_den = mpl.colors.Normalize(vmin=0, vmax=1)
+        cb3 = mpl.colorbar.ColorbarBase(ax_cbden, orientation='vertical',
+                                       cmap=self.cmap_den, norm=self.norm_den)
+        cb3.set_label('Density', labelpad=-.3)
+
+        ticks_cb = np.array([0., 1.])
+        labels_cb = np.char.mod('%1.0f',ticks_cb)
+
+        cb3.set_ticks(ticks_cb)
+        cb3.ax.set_yticklabels(labels_cb)
+
+        return fig, ax_azi, ax_spe, ax_kde, ax_den
 
 
 
