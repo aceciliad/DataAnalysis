@@ -43,6 +43,11 @@ def arguments():
                     default='Z',
                     help='component', type=str)
 
+    ap.add_argument('--baz', action='store', dest='baz',
+                    default=None,
+                    help='backazimuth value', type=float)
+
+
     return ap.parse_args()
 
 
@@ -51,10 +56,12 @@ class PLOT_WAVEFORMS:
     def __init__(self, *,
                  data_dir,
                  event_id,
-                 component='Z'):
+                 component='Z',
+                 baz=None):
         self.data_dir   = data_dir
         self.event_id   = event_id
         self.component  = component
+        self.baz    = baz
 
         return
 
@@ -87,6 +94,8 @@ class PLOT_WAVEFORMS:
         self.tswave_utc = UTCDateTime(tswave)
         self.pha_swave  = [i for i in picks if picks[i]==self.tswave_utc][0]
 
+
+        self.baz_mqs    = picks_events[self.event_id]['baz']
         #import ipdb; ipdb.set_trace()  # noqa
 
         #self.tref_utc   = UTCDateTime(2021, 12, 24, 22, 45, 10, 666041)
@@ -106,6 +115,21 @@ class PLOT_WAVEFORMS:
 
         self.stream_raw = read(os.path.join(self.data_dir,
                                             f'*{self.event_id}*'))
+
+        if self.component in ['R', 'T']:
+
+            if self.baz:
+                backazimuth = self.baz
+                print(' Using custom backazimuth')
+            else:
+                print(' Using MQS backazimuth')
+                backazimuth = self.baz_mqs
+
+            if not backazimuth:
+                raise ValueError('  !!! Backazimuth not available to rotate to {self.component} component')
+
+            self.stream_raw.rotate(method='NE->RT',
+                                   back_azimuth=backazimuth)
 
         return
 
@@ -201,6 +225,11 @@ class PLOT_WAVEFORMS:
         os.makedirs(dir_poli,
                     exist_ok=True)
 
+        if self.component in ['R', 'T']:
+            system  = 'ZRT'
+        else:
+            system  = 'ZNE'
+
         for ifreq, fcenter in enumerate(freqs):
             ifreq2  = np.copy(ifreq)
             f0 = fcenter / df
@@ -241,7 +270,7 @@ class PLOT_WAVEFORMS:
 
             # Polarized waveforms
             freq_id = str(fcenter).replace('.','-')[:4]
-            fname_poli  = f'FB_{self.event_id}_{freq_id}.mseed'
+            fname_poli  = f'FB_{self.event_id}_{freq_id}_{system}.mseed'
             path_poli   = os.path.join(dir_poli,
                                        fname_poli)
 
@@ -404,10 +433,12 @@ if __name__=='__main__':
     results = arguments()
     event   = results.event
     comp    = results.component
+    baz     = results.baz
 
     plot_obj    = PLOT_WAVEFORMS(data_dir=data_dir,
                                  event_id=event,
-                                 component=comp)
+                                 component=comp,
+                                 baz=baz)
 
     plot_obj.read_catalog()
     plot_obj.get_waveforms()

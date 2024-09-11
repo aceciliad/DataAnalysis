@@ -6,3 +6,4 @@ Figures
 Figures/*
 .gitignore
 __pycache__/*
+filter_banks_v2*
