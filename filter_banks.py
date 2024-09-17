@@ -155,6 +155,9 @@ class PLOT_WAVEFORMS:
         plt.savefig(os.path.join(figs_dir,
                                  f'FilterBanks_{self.event_id}_{self.component}.pdf'))
 
+        plt.show()
+
+        import ipdb; ipdb.set_trace()  # noqa
         return
 
 
