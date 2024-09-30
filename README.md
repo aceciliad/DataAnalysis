@@ -7,11 +7,10 @@ Everything here is simplified for fast use.
 
 For basic preprocesing applied to the traces, catalog reading, etc., the reader is refered to the github employ by the Marsquake Service (https://github.com/sstaehler/mqs_reports/).
 
+Two preprocessed events are included in "Data". For more, request the author. 
+
 ## Table of Contents
 - [filter_banks_specgram.py](#filter_banks_specgram.py)
-- [Usage](#usage)
-- [Options](#options)
-- [Examples](#examples)
 
 
 
@@ -27,5 +26,23 @@ This script produces a figure with a fast analysis of the waveforms correspondin
 | `--save`        | Use this flag to save the output. If not present, saving is disabled. |
 | `-h`, `--help`  | Displays help information about the script.                 |
 
+While most flags are selected as plotting options, the `--save` flag is linked to the function `save_picks`  where a phase (e.g., PP) and a delta time `dt` (e.g., 18.2) need to be selected to update the file `Events_picks_new.npy` where the information of the events is saved.
+
+
+## Usage example
+
+```bash
+python filter_banks_specgram.py --e S1094b --c R --baz 44.14
+````
+
+In case of wanting to mark a new phase (or refining an old one), the function `save_picks` can be modified, and the following can be run:
+
+```bash
+python filter_banks_specgram.py --e S1094b --c R --baz 44.14 --save 
+
+# It will ask:
+# "Are you sure you want to save the file? (y/n): "
+# and only overwrite the file when "y" is input into the terminal
+````
 
 
