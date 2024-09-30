@@ -51,6 +51,9 @@ def arguments():
                     default=None,
                     help='backazimuth value', type=float)
 
+    ap.add_argument('--save', action='store_true', dest='save',
+                    help='saves new picks made')
+
     return ap.parse_args()
 
 
@@ -60,11 +63,13 @@ class PLOT_WAVEFORMS:
                  data_dir,
                  event_id,
                  component='Z',
-                 baz=None):
+                 baz=None,
+                 save=False):
         self.data_dir   = data_dir
         self.event_id   = event_id
         self.component  = component
         self.baz    = baz
+        self.save   = save
 
         return
 
@@ -76,11 +81,11 @@ class PLOT_WAVEFORMS:
         (uncertainties, distance, etc.)
         '''
 
-        picks_events    = np.load(os.path.join(data_dir,
-                                               'Events_picks.npy'),
+        picks_events    = np.load('Events_picks_new.npy',
                                   allow_pickle=True).item()
 
         picks   = picks_events[self.event_id]
+        self.picks_events   = picks_events
 
         tref    = picks.get('P',
                             picks.get('PP',
@@ -143,6 +148,9 @@ class PLOT_WAVEFORMS:
         self.fmax   = fmax
         fig, ax_st, ax_pz, ax_fb, ax_sp = self.set_figure()
 
+        if self.save:
+            self.save_picks()
+
         self.plot_waveforms(ax_st)
         self.plot_waveforms(ax_pz,
                             polarized=True)
@@ -155,11 +163,46 @@ class PLOT_WAVEFORMS:
 
         self.set_labels(ax_st, ax_pz, ax_fb, ax_sp)
 
-
+        plt.show()
         os.makedirs(figs_dir, exist_ok=True)
         plt.savefig(os.path.join(figs_dir,
                                  f'FilterBanks_{self.event_id}_{self.component}_spec.pdf'))
+        import ipdb; ipdb.set_trace()  # noqa
+
         return
+
+
+    def save_picks(self):
+        '''
+        super dirty way to write new picks into file
+        just use to check new picks are good
+        '''
+
+        phase   = 'PP'
+        dt      = +18
+
+        print(f'    moving phase {phase} to {dt} sec. from reference time')
+        user_input = input('    Are you sure you want to proceed and save the file? (y/n): ')
+
+        if user_input.lower() == 'y':
+            print('Saving the file...')
+            new_time    = self.tref_utc + dt
+
+            new_data    = {phase:new_time}
+            self.picks_events[self.event_id].update(new_data)
+
+            if phase==self.pha_ref:
+                self.tref_utc   = new_time
+            if phase==self.pha_swave:
+                self.tswave_utc = new_time
+
+            np.save('Events_picks_new', self.picks_events)
+
+        else:
+            print('     File not saved.')
+
+        return
+
 
 
     def plot_spectrogram(self, ax,
@@ -522,6 +565,12 @@ class PLOT_WAVEFORMS:
 
         cb.set_label(r'(m/s)$^{\rm{2}}$/Hz  (dB)')
 
+        ax_st.sharex(ax_pz)
+        ax_pz.sharex(ax_fb)
+        ax_fb.sharex(ax_sp)
+
+        ax_fb.tick_params(bottom=False,which='both')
+
         return fig, ax_st, ax_pz, ax_fb, ax_sp
 
 
@@ -554,6 +603,24 @@ class PLOT_WAVEFORMS:
                                edgecolor='none',
                                alpha=0.7))
 
+        for pha in self.picks_events[self.event_id]:
+            if pha not in [self.pha_ref, self.pha_swave, 'baz', 'quality']:
+                tt  = self.picks_events[self.event_id][pha] - self.tref_utc
+                print(f'    phase {pha}')
+                for ax in [ax_st, ax_pz, ax_fb, ax_sp]:
+                    ax.vlines(tt, -10, 10,
+                              color=color,
+                              ls='dashed',
+                              lw=0.7,
+                              zorder=20)
+                    if ax in [ax_st]:
+                        ax.text(tt+3, ax.get_ylim()[1], pha,
+                                color='lightgray',
+                                ha='left', va='center',zorder=100,
+                                path_effects=[pe.withStroke(linewidth=1.5,
+                                             foreground="white")])
+
+
         return
 
 
@@ -564,11 +631,13 @@ if __name__=='__main__':
     event   = results.event
     comp    = results.component
     baz     = results.baz
+    save    = results.save
 
     plot_obj    = PLOT_WAVEFORMS(data_dir=data_dir,
                                  event_id=event,
                                  component=comp,
-                                 baz=baz)
+                                 baz=baz,
+                                 save=save)
 
     plot_obj.read_catalog()
     plot_obj.get_waveforms()

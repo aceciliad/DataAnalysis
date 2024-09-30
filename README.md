@@ -50,5 +50,8 @@ Are you sure you want to save the file? (y/n): y
 
 Among others the following parameters can be easily modified inside the script to depict different charasteristic of the signal.
 
-- `tnorm0`: when plotting the data, traces are normalized in a time window selected to depict clearly the desired phases. The start of this normalization window is given by `tnorm0`, which is the time in seconds with respect to the reference time (`self.tref_utc`), which is typically the arrival time for P wave.
-- `tnorm1`: when plotting the data, traces are normalized in a time window selected to depict clearly the desired phases. The end of this normalization window is given by `tnorm1`, which is the time in seconds with respect to the reference time (`self.tref_utc`), which is typically the arrival time for P wave.
+- `tnorm0`: when plotting the data, traces are normalized in a time window selected to depict clearly the desired phases. The start of this normalization window is given by `tnorm0` as time in seconds with respect to the reference time (`self.tref_utc`), which is typically the arrival time for P wave.
+- `tnorm1`: when plotting the data, traces are normalized in a time window selected to depict clearly the desired phases. The end of this normalization window is given by `tnorm1` as time in seconds with respect to the reference time (`self.tref_utc`), which is typically the arrival time for P wave.
+- `data_dir`: can be modified to run with denoised data (see https://doi.org/10.1093/gji/ggae279 for details and dataset).
+- `fmin`, `fmax`: the values set in the `plot_event` function can be modified to adapt the bandpass filter to the desired frequency band.
+-
