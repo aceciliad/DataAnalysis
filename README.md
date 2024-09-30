@@ -40,9 +40,15 @@ In case of wanting to mark a new phase (or refining an old one), the function `s
 ```bash
 python filter_banks_specgram.py --e S1094b --c R --baz 44.14 --save 
 
-# It will ask:
-# "Are you sure you want to save the file? (y/n): "
-# and only overwrite the file when "y" is input into the terminal
+# Example output:
+moving phase PP to 18 sec. from reference time
+Are you sure you want to save the file? (y/n): y
+# and will only overwrite the file when "y" is input into the terminal
 ````
 
+## Other custom options
 
+Among others the following parameters can be easily modified inside the script to depict different charasteristic of the signal.
+
+- `tnorm0`: when plotting the data, traces are normalized in a time window selected to depict clearly the desired phases. The start of this normalization window is given by `tnorm0`, which is the time in seconds with respect to the reference time (`self.tref_utc`), which is typically the arrival time for P wave.
+- `tnorm1`: when plotting the data, traces are normalized in a time window selected to depict clearly the desired phases. The end of this normalization window is given by `tnorm1`, which is the time in seconds with respect to the reference time (`self.tref_utc`), which is typically the arrival time for P wave.
