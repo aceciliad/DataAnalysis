@@ -11,6 +11,7 @@ Two preprocessed events are included in "Data". For more, request the author.
 
 ## Table of Contents
 - [filter_banks_specgram.py](#filter_banks_specgram.py)
+- [polarization_analysis.py](#polarization_analysis.py)
 
 
 
@@ -29,7 +30,7 @@ This script produces a figure with a fast analysis of the waveforms correspondin
 While most flags are selected as plotting options, the `--save` flag is linked to the function `save_picks`  where a phase (e.g., PP) and a delta time `dt` (e.g., 18.2) need to be selected to update the file `Events_picks_new.npy` where the information of the events is saved.
 
 
-## Usage example
+### Usage example
 
 ```bash
 python filter_banks_specgram.py --e S1094b --c R --baz 44.14
@@ -46,7 +47,7 @@ Are you sure you want to save the file? (y/n): y
 # and will only overwrite the file when "y" is input into the terminal
 ````
 
-## Other custom options
+### Other custom options
 
 Among others the following parameters can be easily modified inside the script to depict different charasteristic of the signal.
 
@@ -54,4 +55,7 @@ Among others the following parameters can be easily modified inside the script t
 - `tnorm1`: when plotting the data, traces are normalized in a time window selected to depict clearly the desired phases. The end of this normalization window is given by `tnorm1` as time in seconds with respect to the reference time (`self.tref_utc`), which is typically the arrival time for P wave.
 - `data_dir`: can be modified to run with denoised data (see https://doi.org/10.1093/gji/ggae279 for details and dataset).
 - `fmin`, `fmax`: the values set in the `plot_event` function can be modified to adapt the bandpass filter to the desired frequency band.
--
+
+## polarization_analysis.py
+
+
