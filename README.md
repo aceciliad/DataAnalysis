@@ -5,9 +5,9 @@ The scripts included here are designed to do a quick processing of the InSight s
 
 Everything here is simplified for fast use. 
 
-For basic preprocesing applied to the traces, catalog reading, etc., the reader is refered to the github employ by the Marsquake Service (https://github.com/sstaehler/mqs_reports/).
+For basic preprocesing applied to the traces, catalog reading, etc., the reader is refered to the github employed by the Marsquake Service (https://github.com/sstaehler/mqs_reports/).
 
-Two preprocessed events are included in "Data". For more, request the author. 
+Two preprocessed events are included in "Data". For more, please request the author. 
 
 ## Table of Contents
 - [filter_banks_specgram.py](#filter_banks_specgram.py)
@@ -17,7 +17,7 @@ Two preprocessed events are included in "Data". For more, request the author.
 
 ## filter_banks_specgram.py
 
-This script produces a figure with a fast analysis of the waveforms corresponding to the event selected. 
+This script produces a figure with a fast analysis of the waveforms corresponding to the selected event and component. 
 
 | Option          | Description                                                 |
 |-----------------|-------------------------------------------------------------|
@@ -29,14 +29,18 @@ This script produces a figure with a fast analysis of the waveforms correspondin
 
 While most flags are selected as plotting options, the `--save` flag is linked to the function `save_picks`  where a phase (e.g., PP) and a delta time `dt` (e.g., 18.2) need to be selected to update the file `Events_picks_new.npy` where the information of the events is saved.
 
+Please note that these scripts have been developed with the goal of picking seismic phases (i.e., following Duran et al., 2022 https://www.sciencedirect.com/science/article/pii/S0031920122000127).
+
 
 ### Usage example
+
+The following provides an example on how to run the script to provide the waveform analysis for the R component, considering a backazimuth of 44.14 degrees (Posiolova et al., 2022).
 
 ```bash
 python filter_banks_specgram.py --e S1094b --c R --baz 44.14
 ````
 
-In case of wanting to mark a new phase (or refining an old one), the function `save_picks` can be modified, and the following can be run:
+The script was originally designed to pick seismic phases. In case of wanting to mark a new phase (or refining an old one), the function `save_picks` can be modified (see parameters `phase` and `dt` to add a new phase pick), and the following can be run:
 
 ```bash
 python filter_banks_specgram.py --e S1094b --c R --baz 44.14 --save 
@@ -44,12 +48,12 @@ python filter_banks_specgram.py --e S1094b --c R --baz 44.14 --save
 # Example output:
 moving phase PP to 18 sec. from reference time
 Are you sure you want to save the file? (y/n): y
-# and will only overwrite the file when "y" is input into the terminal
+# to ensure we do not mess up, it will only overwrite the file when we input "y"
 ````
 
 ### Other custom options
 
-Among others the following parameters can be easily modified inside the script to depict different charasteristic of the signal.
+Among others the following parameters can be easily modified inside the script to depict different charasteristics of the signal:
 
 - `tnorm0`: when plotting the data, traces are normalized in a time window selected to depict clearly the desired phases. The start of this normalization window is given by `tnorm0` as time in seconds with respect to the reference time (`self.tref_utc`), which is typically the arrival time for P wave.
 - `tnorm1`: when plotting the data, traces are normalized in a time window selected to depict clearly the desired phases. The end of this normalization window is given by `tnorm1` as time in seconds with respect to the reference time (`self.tref_utc`), which is typically the arrival time for P wave.
@@ -57,5 +61,11 @@ Among others the following parameters can be easily modified inside the script t
 - `fmin`, `fmax`: the values set in the `plot_event` function can be modified to adapt the bandpass filter to the desired frequency band.
 
 ## polarization_analysis.py
+
+This script provides a fast analysis of the polarization attributes of the signal. 
+Zenhaeusern et al., [2022](https://pubs.geoscienceworld.org/ssa/bssa/article/112/4/1787/613988/Low-Frequency-Marsquakes-and-Where-to-Find-Them)
+
+
+# References
 
 
