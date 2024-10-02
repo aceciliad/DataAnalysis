@@ -59,13 +59,14 @@ Among others the following parameters can be easily modified inside the script t
 - `data_dir`: can be modified to run with denoised data (see Dahmen et al., [2024](https://doi.org/10.1093/gji/ggae279) for details and denoised dataset).
 - `fmin`, `fmax`: the values set in the `plot_event` function can be modified to adapt the bandpass filter to the desired frequency band.
 - `vmin_spe`, `vmax_spe`: clipping values for the scalogram.
+- `polarized`: in the function `plot_spectrogram` the parameter `polarized` can be set to True or False to produce the spectrogram of the polarized or non polarized waveforms, respectively.
 
 
 ## polarization_analysis.py
 
 This script provides a fast analysis of the polarization attributes of the signal. Following Zenhaeusern et al., ([2022](https://pubs.geoscienceworld.org/ssa/bssa/article/112/4/1787/613988/Low-Frequency-Marsquakes-and-Where-to-Find-Them)), we compute the polarization attributes in order to plot the 3-components scalogram, the particle motion and a density estimate of the particle motion. 
 
-![alt text](https://github.com/aceciliad/DataAnalysis/blob/main/Figures/PolAnalysis_S0235b.pdf)
+![See figure](https://github.com/aceciliad/DataAnalysis/blob/main/Figures/PolAnalysis_S0235b.pdf)
 
 Nevertheless, the polarization analysis includes other values that can also be employed to analyze particle motion such as:
 - `inclination`
